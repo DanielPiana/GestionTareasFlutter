@@ -1,4 +1,3 @@
-import 'dart:ffi';
 
 import 'package:flutter/material.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -91,7 +90,7 @@ class _HomePageState extends State<HomePage> {
     await widget.database.insert('tasks', {
       'title': title,
       'description': description,
-      'completed': 0, // Nueva tarea no está completada
+      'completed': 0, // POR DEFECTO NO ESTA COMPLETADA
     });
     _taskTitleController.clear();
     _taskDescriptionController.clear();
@@ -112,9 +111,9 @@ class _HomePageState extends State<HomePage> {
   // Función para eliminar una tarea
   Future<void> _deleteTask(int id) async {
     await widget.database.delete(
-      'tasks',
-      where: 'id = ?',
-      whereArgs: [id],
+      'tasks',// TABLA DONDE SE VA A ACTUALIZAR
+      where: 'id = ?',// DONDE EL ID EQUIVALGA A ?
+      whereArgs: [id],// DAMOS VALOR AL ? CON EL ID PROPORCIONADO POR PARAMETRO
     );
     _loadTasks(); // Recargamos las tareas después de eliminar una
   }
@@ -130,8 +129,7 @@ class _HomePageState extends State<HomePage> {
         child: Padding(
           padding: const EdgeInsets.all(20.0),
           child: Column(
-            children: [
-              // Campos para ingresar la tarea
+            children: [ // TEXTFIELDS PARA ESCRIBIR EL NOMBRE Y LA DESCRIPCION DE LA TAREA
               TextField(
                 controller: _taskTitleController,
                 decoration: InputDecoration(hintText: 'Nombre de la tarea'),
@@ -140,13 +138,10 @@ class _HomePageState extends State<HomePage> {
                 controller: _taskDescriptionController,
                 decoration: InputDecoration(hintText: 'Descripción de la tarea'),
               ),
-              SizedBox(height: 20),
-              ElevatedButton(
+              SizedBox(height: 20), // ESPACIADOR
+              ElevatedButton( //BOTON
                 onPressed: () {
-                  _addTask(
-                    _taskTitleController.text,
-                    _taskDescriptionController.text,
-                  );
+                  _addTask(_taskTitleController.text, _taskDescriptionController.text); // AÑADIMOS LA TAREA
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blueAccent,
@@ -156,49 +151,50 @@ class _HomePageState extends State<HomePage> {
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.add),
-                    Text("Añadir", style: TextStyle(color: Colors.white)),
+                    Icon(Icons.add), // ICONO DENTRO DEL BOTON
+                    Text("Añadir", style: TextStyle(color: Colors.white)), //TEXTO DENTRO DEL BOTON
                   ],
                 ),
               ),
-              // Lista de tareas
+              // LISTA DE TAREAS (EXPANDED PARA QUE NO PETE) PORQUE EL LISTILE NECESITA ALGO QUE CONTROLE SU TAMAÑO.
               Expanded(
                 child: ListView.builder(
-                  itemCount: _tasks.length,
+                  itemCount: _tasks.length, //LONGITUD DEL LISTTILE
                   padding: EdgeInsets.all(10),
                   itemBuilder: (context, int index) {
-                    final task = _tasks[index];
+                    final task = _tasks[index]; //TAREA ACTUAL EN EL LISTILE
                     return ListTile(
-                      leading: Text(
+                      leading: Text( //LEADING (PRINCIPIO DEL LISTILE)
                         "${task['title']} \n${task['description']}",
                         style: TextStyle(
-                          decoration: task['completed'] == 1
-                              ? TextDecoration.lineThrough
-                              : TextDecoration.none,
-                          color: task['completed'] == 1
-                              ? Colors.grey
-                              : Colors.black,
+                          decoration: task['completed'] == 1  //CAMBIO DE ESTILO SI LA TAREA ESTA COMPLETADA O NO
+                              ? TextDecoration.lineThrough //SI ESTA COMPLETADA
+                              : TextDecoration.none, //SI NO ESTA COMPLETADA
+                          color: task['completed'] == 1 //CAMBIO DE COLOR SI LA TAREA ESTA COMPLETADA O NO
+                              ? Colors.grey //SI ESTA COMPLETADA
+                              : Colors.black, //SI NO ESTA COMPLETADA
                         ),
                       ),
-                      trailing: Row(
+                      trailing: Row( //TRAILING (FINAL DEL LISTILE)
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          // DropdownButton para cambiar el estado de la tarea
                           DropdownButton<String>(
-                            value: task['completed'] == 1 ? "Completado" : "No completado", // Selección basada en el estado de 'completed'
-                            items: _dropDownButtonList.map((String item) {
+                            value: task['completed'] == 1 //CAMBIO DE VISUALIZACION EN EL COMBOBOX EN BASE A SI LA TAREA ESTA COMPLETADA
+                                ? "Completado" // SI ESTA COMPLETADA
+                                : "No completado", // SI NO ESTA COMPLETADA
+                            items: _dropDownButtonList.map((String item) { //CONVIERTE CADA ELEMENTO DE UNA LISTA A DropdownMenuItem
                               return DropdownMenuItem<String>(
-                                value: item,
+                                value: item, // REPRESENTA EL ELEMENTO INDIVIDUAL DE LA LISTA MIENTRAS SE RECORRE
                                 child: Text(item),
                               );
                             }).toList(),
-                            onChanged: (String? newValue) {
-                              // Convertimos el valor del Dropdown en un int para actualizar la base de datos
+                            onChanged: (String? newValue) { //newValue ES EL TEXTO DE "Completado" y "No completado" del DropdownButton
+                              // CONVIERTO EL VALOR DEL DropdownButton A INT PARA ACTUALIZAR LA BASE DE DATOS
                               int completedValue = newValue == "Completado" ? 1 : 0;
-                              _changeTaskStatus(task['id'], completedValue);
+                              _changeTaskStatus(task['id'], completedValue); // CAMBIAMOS EL ESTADO DE task['id'] con el VALOR DEL DropdownButton CONVERTIDO A INT
                             },
                           ),
-                          IconButton(
+                          IconButton( // BORRAR
                             onPressed: () {
                               _deleteTask(task['id']);
                             },
